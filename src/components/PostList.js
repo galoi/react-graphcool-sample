@@ -14,7 +14,36 @@ const ALL_POSTS_QUERY = gql`
   }
 `;
 
+const POSTS_SUBSCRIPTION = gql`
+  subscription NewPostCreatedSubscription {
+    Post {
+      node {
+        id
+        title
+        content
+      }
+    }
+  }
+`;
+
 class PostList extends Component {
+  componentDidMount() {
+    this.props.allPostsQuery.subscribeToMore({
+      document: POSTS_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        const newPosts = [
+          ...prev.allPosts,
+          subscriptionData.data.Post.node,
+        ];
+        const result = {
+          ...prev,
+          allPosts: newPosts,
+        };
+        return result;
+      },
+    });
+  }
+
   render() {
     if (this.props.allPostsQuery && this.props.allPostsQuery.loading) {
       return <p>データを読み込み中</p>;
