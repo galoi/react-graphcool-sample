@@ -5,7 +5,7 @@ import gql from "graphql-tag";
 import { graphql } from "react-apollo";
 
 const ALL_POSTS_QUERY = gql`
-  query {
+  query allPostsQuery {
     allPosts {
       id
       title
@@ -15,9 +15,20 @@ const ALL_POSTS_QUERY = gql`
 `;
 
 const POSTS_SUBSCRIPTION = gql`
-  subscription NewPostCreatedSubscription {
-    Post {
+  subscription updatePost {
+    Post(
+      filter: {
+        mutation_in: [CREATED, UPDATED, DELETED]
+      }
+    ) {
+      mutation
       node {
+        id
+        title
+        content
+      }
+      updatedFields
+      previousValues {
         id
         title
         content
@@ -31,14 +42,22 @@ class PostList extends Component {
     this.props.allPostsQuery.subscribeToMore({
       document: POSTS_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
-        const newPosts = [
+        let newPosts = [
           ...prev.allPosts,
-          subscriptionData.data.Post.node,
         ];
+        if (subscriptionData.data.Post.mutation === "CREATED") {
+          newPosts = [
+            ...prev.allPosts,
+            subscriptionData.data.Post.node,
+          ];
+        }
         const result = {
           ...prev,
           allPosts: newPosts,
         };
+        console.log('prev', prev);
+        console.log('sub', subscriptionData.data);
+        console.log('newPosts', newPosts);
         return result;
       },
     });
