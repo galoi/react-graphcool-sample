@@ -18,17 +18,17 @@ const POSTS_SUBSCRIPTION = gql`
   subscription updatePost {
     Post(
       filter: {
-        mutation_in: [CREATED, UPDATED, DELETED]
+        mutation_in: [CREATED, UPDATED] # 購読対象のmutationを設定
       }
     ) {
-      mutation
-      node {
+      mutation # 実行されたmutationを出力
+      node { # mutation後の状態を出力
         id
         title
         content
       }
-      updatedFields
-      previousValues {
+      updatedFields # updateされたフィールドを抽出
+      previousValues { # update前の状態を出力
         id
         title
         content

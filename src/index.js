@@ -12,23 +12,31 @@ import App from "./components/App";
 
 import "./index.css";
 
-const GRAPHQL_ENDPOINT = "https://api.graph.cool/simple/v1/cjf4wcgwo0z4w01627nhp8n9e";
+const SIMPLE_ENDPOINT = "https://api.graph.cool/simple/v1/cjf4wcgwo0z4w01627nhp8n9e";
 
-if (!GRAPHQL_ENDPOINT) {
-  throw Error("GRAPHQL_ENDPOINTが設定されていません。");
+if (!SIMPLE_ENDPOINT) {
+  throw Error("ENDPOINTが設定されていません。");
 }
 
+const SUBSCRIPTIONS_ENDPOINT = "wss://subscriptions.graph.cool/v1/cjf4wcgwo0z4w01627nhp8n9e";
+
+if (!SUBSCRIPTIONS_ENDPOINT) {
+  throw Error("Subscription用のENDPOINTが設定されていません。");
+}
+
+// http linkを生成
+const httpLink = new HttpLink({ uri: SIMPLE_ENDPOINT });
+
+// WebSocket linkを生成
 const wsLink = new WebSocketLink({
-  uri: `wss://subscriptions.graph.cool/v1/cjf4wcgwo0z4w01627nhp8n9e`,
+  uri: SUBSCRIPTIONS_ENDPOINT,
   options: {
     reconnect: true
   }
 });
 
-const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cjf4wcgwo0z4w01627nhp8n9e' });
-
-// Splits the requests based on the query type - 
-// E.g. subscriptions go to wsLink and everything else to httpLink
+// queryの種類によって、接続先を切り替える
+// split()は第一引数がtrueならば第二引数を、falseならば第三引数を返す
 const link = split(
   ({ query }) => {
     const { kind, operation } = getMainDefinition(query);
