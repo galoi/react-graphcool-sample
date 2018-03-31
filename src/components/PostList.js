@@ -42,7 +42,7 @@ class PostList extends Component {
     this.props.allPostsQuery.subscribeToMore({
       document: POSTS_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
-        let result = { ...prev };
+        let result = { allPosts: prev.allPosts };
         
         if (subscriptionData.data.Post.mutation === "CREATED") {
           const newPosts = [
@@ -50,10 +50,7 @@ class PostList extends Component {
             subscriptionData.data.Post.node,
           ];
           console.log('newPosts', newPosts);
-          result = {
-            ...prev,
-            allPosts: newPosts,
-          };
+          result = { allPosts: newPosts };
         }
         console.log('prev', prev);
         console.log('sub', subscriptionData.data);        
