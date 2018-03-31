@@ -18,17 +18,17 @@ const POSTS_SUBSCRIPTION = gql`
   subscription updatePost {
     Post(
       filter: {
-        mutation_in: [CREATED, UPDATED] # 購読対象のmutationを設定
+        mutation_in: [CREATED, UPDATED] # 購読対象のmutationの種類を指定
       }
     ) {
-      mutation # 実行されたmutationを出力
-      node { # mutation後の状態を出力
+      mutation # 実行されたmutationの種類を出力
+      node { # 変化後のデータを出力
         id
         title
         content
       }
-      updatedFields # updateされたフィールドを抽出
-      previousValues { # update前の状態を出力
+      updatedFields # UPDATEされたフィールドを出力
+      previousValues { # 変化前のデータを出力
         id
         title
         content
@@ -42,22 +42,22 @@ class PostList extends Component {
     this.props.allPostsQuery.subscribeToMore({
       document: POSTS_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
-        let newPosts = [
-          ...prev.allPosts,
-        ];
+        let result = { ...prev };
+        
         if (subscriptionData.data.Post.mutation === "CREATED") {
-          newPosts = [
+          const newPosts = [
             ...prev.allPosts,
             subscriptionData.data.Post.node,
           ];
+          console.log('newPosts', newPosts);
+          result = {
+            ...prev,
+            allPosts: newPosts,
+          };
         }
-        const result = {
-          ...prev,
-          allPosts: newPosts,
-        };
         console.log('prev', prev);
-        console.log('sub', subscriptionData.data);
-        console.log('newPosts', newPosts);
+        console.log('sub', subscriptionData.data);        
+
         return result;
       },
     });
